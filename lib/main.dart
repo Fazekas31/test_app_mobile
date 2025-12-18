@@ -1,22 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:geolocator/geolocator.dart'; // Importe para usar o tipo Position
-import 'services/location_service.dart'; // Importe seu service criado acima
+import 'package:geolocator/geolocator.dart';
+import 'services/location_service.dart';
+import 'screens/list_screen.dart'; // <--- IMPORTANTE: Certifique-se que este arquivo existe
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Carrega variáveis de ambiente
-  await dotenv.load(
-    fileName: '.env',
-    isOptional: true,
-  );
+  // 1. Carrega variáveis de ambiente com tratamento de erro
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Erro ao carregar .env: $e");
+    // O app continuará, mas vai falhar na verificação abaixo se não carregar
+  }
 
-  // 2. Inicializa Supabase
+  // 2. Verificação de Segurança (Evita o Crash "Null check operator")
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
+  final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+  if (supabaseUrl == null || supabaseKey == null) {
+    // Se faltar chave, rodamos um App de Erro para avisar você na tela
+    runApp(const ErrorApp(
+        message:
+            "Faltou configurar o arquivo .env com SUPABASE_URL e SUPABASE_ANON_KEY"));
+    return;
+  }
+
+  // 3. Inicializa Supabase (agora seguro)
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: supabaseUrl,
+    anonKey: supabaseKey,
   );
 
   runApp(const MyApp());
@@ -24,12 +39,32 @@ void main() async {
 
 final supabase = Supabase.instance.client;
 
+// App simples apenas para mostrar erro de configuração se houver
+class ErrorApp extends StatelessWidget {
+  final String message;
+  const ErrorApp({super.key, required this.message});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+            child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.red, fontSize: 18),
+                    textAlign: TextAlign.center))),
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Teste Dev Mobile',
+      debugShowCheckedModeBanner: false, // Remove a tarja "Debug"
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
       home: const FormScreen(),
     );
@@ -97,7 +132,22 @@ class _FormScreenState extends State<FormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nova Vistoria')),
+      appBar: AppBar(
+        title: const Text('Nova Vistoria'),
+        actions: [
+          // --- NOVO: Botão para ir à tela de lista ---
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: "Ver Histórico",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ListScreen()),
+              );
+            },
+          )
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
