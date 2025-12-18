@@ -8,7 +8,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Carrega variáveis de ambiente
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(
+    fileName: '.env',
+    isOptional: true,
+  );
 
   // 2. Inicializa Supabase
   await Supabase.initialize(
