@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'services/location_service.dart';
-import 'screens/list_screen.dart'; // <--- IMPORTANTE: Certifique-se que este arquivo existe
+import 'screens/list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,7 @@ void main() async {
     return;
   }
 
-  // 3. Inicializa Supabase (agora seguro)
+  // 3. Inicializa Supabase
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseKey,
@@ -39,7 +40,6 @@ void main() async {
 
 final supabase = Supabase.instance.client;
 
-// App simples apenas para mostrar erro de configuração se houver
 class ErrorApp extends StatelessWidget {
   final String message;
   const ErrorApp({super.key, required this.message});
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Teste Dev Mobile',
-      debugShowCheckedModeBanner: false, // Remove a tarja "Debug"
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
       home: const FormScreen(),
     );
@@ -92,7 +92,7 @@ class _FormScreenState extends State<FormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Capturar Geolocalização (Requisito Obrigatório)
+      // 1. Capturar Geolocalização
       final Position position = await _locationService.getCurrentLocation();
 
       // 2. Montar Payload conforme tabela do Supabase
@@ -135,7 +135,6 @@ class _FormScreenState extends State<FormScreen> {
       appBar: AppBar(
         title: const Text('Nova Vistoria'),
         actions: [
-          // --- NOVO: Botão para ir à tela de lista ---
           IconButton(
             icon: const Icon(Icons.list_alt),
             tooltip: "Ver Histórico",

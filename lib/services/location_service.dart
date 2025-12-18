@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
-  /// Solicita permissão e retorna a posição atual com alta precisão.
+  /// Solicita permissão e retorna a posição atual.
   /// Lança exceptions se o usuário negar ou se o GPS estiver desligado.
   Future<Position> getCurrentLocation() async {
     bool serviceEnabled;
@@ -27,7 +27,7 @@ class LocationService {
           'Permissões negadas permanentemente. Abra as configurações.');
     }
 
-    // 3. Retorna a posição (Requisito: Accuracy e Timestamp vêm aqui)
+    // 3. Retorna a posição
     return await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
